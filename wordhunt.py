@@ -6,6 +6,7 @@ import pprint
 import nltk
 from nltk.corpus import words
 nltk.download('words')
+import time
 
 __author__ = "Jessie You"
 
@@ -15,14 +16,17 @@ WORDS = words.words()
 
 def main() -> None:
     randomized()
-    pretty_print()
-    print(is_word_valid("true"))
-    print(is_word_valid("nutzzz"))
+    play()
 
 def play() -> None:
     """Play the game"""
     # TODO
-    pass
+    points: int
+    array = []
+    time_start = time.now()
+    while (time.now() - time_start).totalseconds() < 180:
+        pass
+    
 
 def is_word_valid(word: str) -> bool:
     return word in WORDS
@@ -53,6 +57,9 @@ def get_input() -> tuple[int, int]:
     return (int(x[0]), int(x[1]))
 
 def is_adjacent(left: tuple[int,int], right: tuple[int,int]) -> bool:
+    # TODO: if left == right return False
+    if left == right:
+        return False
     if abs(left[0] - right[0]) <= 1:
         if abs(left[1] - right[1]) <= 1:
             return True
