@@ -5,6 +5,7 @@ from random import choice
 import pprint
 import nltk
 from nltk.corpus import words
+import time
 
 try:
     words.words()
@@ -20,15 +21,18 @@ WORDS = words.words()
 
 def main() -> None:
     randomized()
-    pretty_print()
-    print(is_word_valid("true"))
-    print(is_word_valid("nutzzz"))
+    play()
 
 
 def play() -> None:
     """Play the game"""
     # TODO
-    pass
+    points: int
+    array = []
+    time_start = time.now()
+    while (time.now() - time_start).totalseconds() < 180:
+        pass
+    
 
 
 def is_word_valid(word: str) -> bool:
@@ -68,8 +72,9 @@ def get_input() -> tuple[int, int]:
 
     return indices[0], indices[1]
 
-
 def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
+    if left == right:
+        return False
     if abs(left[0] - right[0]) <= 1 and abs(left[1] - right[1]) <= 1:
         return True
     return False
