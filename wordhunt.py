@@ -3,20 +3,15 @@
 from string import ascii_uppercase
 from random import choice
 import pprint
-import nltk
-from nltk.corpus import words
 import time
+import enchant
 
-try:
-    words.words()
-except LookupError:
-    nltk.download("words")
 
 __author__ = "Jessie You"
 
 SIZE = 4
 BOARD = [["A"] * SIZE for i in range(SIZE)]
-WORDS = words.words()
+WORDS = enchant.Dict("en_US")
 
 
 def main() -> None:
@@ -32,11 +27,12 @@ def play() -> None:
     time_start = time.now()
     while (time.now() - time_start).totalseconds() < 180:
         pass
-    
 
 
-def is_word_valid(word: str) -> bool:
-    return word.lower() in WORDS
+def is_word_valid(word: str) -> bool | None:
+    """Return type includes None because `check` could raise error, but this will realistically never happen"""
+    # check does not care about case
+    return WORDS.check(word)
 
 
 def randomized() -> None:
@@ -71,6 +67,7 @@ def get_input() -> tuple[int, int]:
         break
 
     return indices[0], indices[1]
+
 
 def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
     if left == right:
