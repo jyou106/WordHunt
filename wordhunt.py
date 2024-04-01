@@ -14,8 +14,9 @@ except LookupError:
 __author__ = "Jessie You"
 
 SIZE = 4
-BOARD = [["A"]*SIZE for i in range(SIZE)]
+BOARD = [["A"] * SIZE for i in range(SIZE)]
 WORDS = words.words()
+
 
 def main() -> None:
     randomized()
@@ -23,21 +24,26 @@ def main() -> None:
     print(is_word_valid("true"))
     print(is_word_valid("nutzzz"))
 
+
 def play() -> None:
     """Play the game"""
     # TODO
     pass
 
+
 def is_word_valid(word: str) -> bool:
     return word.lower() in WORDS
+
 
 def randomized() -> None:
     for i in range(len(BOARD)):
         for j in range(len(BOARD[0])):
             BOARD[i][j] = choice(ascii_uppercase)
 
+
 def pretty_print() -> None:
     pprint.pprint(BOARD)
+
 
 def get_input() -> tuple[int, int]:
     indices: tuple[int, ...]
@@ -62,10 +68,12 @@ def get_input() -> tuple[int, int]:
 
     return indices[0], indices[1]
 
-def is_adjacent(left: tuple[int,int], right: tuple[int,int]) -> bool:
+
+def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
     if abs(left[0] - right[0]) <= 1 and abs(left[1] - right[1]) <= 1:
         return True
     return False
+
 
 if __name__ == "__main__":
     main()
