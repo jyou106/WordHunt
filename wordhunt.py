@@ -32,7 +32,7 @@ SCORES: dict[int, int] = {
     15: 5000,
     16: 5400,
 }
-DURATION: float = 40.0
+DURATION: float = 60.0
 START_TIME: float = 0.0
 
 INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
@@ -79,8 +79,11 @@ def play() -> None:
         sorted(words.items(), key=lambda kv: (-kv[1], kv[0]))
     )
 
+    total_words: int = len(words)
+
     print("\n" + json.dumps(sorted_words, indent=4))
     print(f"Score: {sum(sorted_words.values())}")
+    print(f"Words: {total_words}")
 
 
 def is_word_valid(word: str) -> bool | None:
