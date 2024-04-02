@@ -6,12 +6,13 @@ import pprint
 import time
 import enchant
 import json
+import re
 
 
 __author__ = "Jessie You"
 
 SIZE = 4
-BOARD = [["A"] * SIZE for i in range(SIZE)]
+BOARD = [["A"] * SIZE for _ in range(SIZE)]
 WORDS = enchant.Dict("en_US")
 SCORES: dict[int, int] = {
     3: 100,
@@ -30,35 +31,45 @@ SCORES: dict[int, int] = {
     16: 5400,
 }
 
+INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
+"""Matches strings such as
+
+* 0,0
+* 0,0;1,1
+* 0,0;1,1;2,3
+"""
+
 
 def main() -> None:
-    randomized()
+    randomize_board()
     play()
 
 
 def play() -> None:
     """Play the game"""
-    # TODO
-    points: int = 0
     user_words: list[str] = []
     duration = 20
     start_time = time.time()
     while int(time.time() - start_time) < duration:
         pprint.pprint(BOARD)
         word: str | None = get_word()
-        if word is not None and is_word_valid(word):
+        if word is None:
+            # don't need to print error message because get_word() already prints one
+            continue
+        elif is_word_valid(word):
             user_words.append(word)
+            print(f"Valid word {word}")
+        else:
+            print(f"Invalid word {word}")
 
-    sorted_words: list[str] = sort_words(user_words)
-    print(json.dumps(gen_words_and_scores(sorted_words), indent=4))
-
-
-def sort_words(words: list[str]) -> list[str]:
-    return sorted(words, key=lambda x: (len(x), x), reverse=True)
-
-
-def points(word: str) -> int:
-    return SCORES[len(word)]
+    sorted_words: list[str] = sorted(
+        user_words, key=lambda word: (len(word), word), reverse=True
+    )
+    words_and_scores: dict[str, int] = {
+        word: SCORES[len(word)] for word in sorted_words
+    }
+    print("\n" + json.dumps(words_and_scores, indent=4))
+    print(f"Score: {sum(words_and_scores.values())}")
 
 
 def is_word_valid(word: str) -> bool | None:
@@ -68,27 +79,20 @@ def is_word_valid(word: str) -> bool | None:
     return WORDS.check(word)
 
 
-def randomized() -> None:
+def randomize_board() -> None:
     for i in range(len(BOARD)):
         for j in range(len(BOARD[0])):
             BOARD[i][j] = choice(ascii_uppercase)
 
 
-def gen_words_and_scores(words: list[str]) -> dict[str, int]:
-    return {word: points(word) for word in words}
-
-
 def get_word() -> str | None:
-    """Get a word on the board from the user. The user inputs a list of indices (e.g., 0,0;1,2;1,3)."""
-    s: str = ""
+    """Get a word on the board from the user. The user inputs a list of index pairs, such as 0,0;1,2;1,3
 
+    Returns None if the input is invalid."""
     user_input: str = input("Input: ")
-    user_input.replace(" ", "")
+    user_input = user_input.replace(" ", "")
 
-    if (
-        not all(char.isdigit() or char in {",", ";"} for char in user_input)
-        or not user_input
-    ):
+    if INDEX_FORMAT.match(user_input) is None:
         print("Invalid input. Ex: 0,0;1,2;1,3 (nonnegative integers)")
         return None
 
@@ -96,41 +100,32 @@ def get_word() -> str | None:
     index_pairs: list[tuple[int, int]] = []
 
     for index_pair in user_input_split:
-        index_pair_int = tuple(map(int, index_pair.split(",")))
-        if len(index_pair_int) != 2:
+        index_pair_tup = tuple(map(int, index_pair.split(",")))
+        if index_pair_tup[0] >= SIZE or index_pair_tup[1] >= SIZE:
             print(
-                f"{index_pair_int} doesn't have 2 elements. Need pairs of indices (i, j)."
+                f"{index_pair_tup} has out-of-bounds element(s). Both indices must be less than {SIZE}"
             )
             return None
-        if index_pair_int[0] >= SIZE or index_pair_int[1] >= SIZE:
-            print(
-                f"{index_pair_int} has out-of-bounds element(s). Both indices must be less than {SIZE}"
-            )
+        # O(N) find in a list, but N is small
+        if index_pair_tup in index_pairs:
+            print(f"Index pair {index_pair_tup} is repeated")
             return None
-        index_pairs.append(index_pair_int)
+        index_pairs.append(index_pair_tup)  # type: ignore
 
-    # Should use iterator
-    for i in range(0, len(index_pairs) - 1):
-        prev_index_pair: tuple[int, int] = index_pairs[i]
-        curr_index_pair: tuple[int, int] = index_pairs[i + 1]
-        if not is_adjacent(prev_index_pair, curr_index_pair):
-            print(
-                f"Index pairs {prev_index_pair} and {curr_index_pair} are not adjacent to each other"
-            )
-            return None
+    if not all(
+        is_adjacent(index_pairs[i], index_pairs[i + 1])
+        for i in range(len(index_pairs) - 1)
+    ):
+        print("All index pairs must be adjacent to each other")
+        return None
 
-    for index_pair in index_pairs:
-        s += BOARD[index_pair[0]][index_pair[1]]
-
-    return s
+    return "".join(BOARD[i][j] for i, j in index_pairs)
 
 
 def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
     if left == right:
         return False
-    if abs(left[0] - right[0]) <= 1 and abs(left[1] - right[1]) <= 1:
-        return True
-    return False
+    return abs(left[0] - right[0]) <= 1 and abs(left[1] - right[1]) <= 1
 
 
 if __name__ == "__main__":
