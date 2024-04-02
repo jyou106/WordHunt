@@ -3,6 +3,7 @@
 from string import ascii_uppercase
 from random import choice
 import pprint
+from inputimeout import inputimeout
 import time
 import enchant
 
@@ -15,18 +16,29 @@ WORDS = enchant.Dict("en_US")
 
 
 def main() -> None:
-    randomized()
-    play()
+    #randomized()
+    play() 
 
 
 def play() -> None:
     """Play the game"""
     # TODO
     points: int
-    array = []
-    time_start = time.now()
-    while (time.now() - time_start).totalseconds() < 180:
-        pass
+    user_word = []
+    duration = 10
+    start_time = time.time()
+    while int(time.time() - start_time) < (duration):
+        try: 
+        # Take timed input using inputimeout() function 
+            time_over = inputimeout(prompt='Name your best friend:', timeout=(duration - (time.time() - start_time))) 
+            user_word.append(time_over)
+        # Catch the timeout error 
+        except Exception: 
+            # Declare the timeout statement 
+            time_over = 'Your time is over!'
+            print(time_over)
+    
+    print(user_word)
 
 
 def is_word_valid(word: str) -> bool | None:
