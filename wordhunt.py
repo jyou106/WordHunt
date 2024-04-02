@@ -4,6 +4,7 @@ from string import ascii_uppercase
 from random import choice
 import pprint
 import time
+from inputimeout import inputimeout
 import enchant
 import json
 import re
@@ -48,8 +49,9 @@ def main() -> None:
 def play() -> None:
     """Play the game"""
     user_words: list[str] = []
-    duration = 20
+    duration = 35
     start_time = time.time()
+
     while int(time.time() - start_time) < duration:
         pprint.pprint(BOARD)
         word: str | None = get_word()
@@ -68,8 +70,12 @@ def play() -> None:
     words_and_scores: dict[str, int] = {
         word: SCORES[len(word)] for word in sorted_words
     }
+
+    total_words: int = len(user_words)
+
     print("\n" + json.dumps(words_and_scores, indent=4))
     print(f"Score: {sum(words_and_scores.values())}")
+    print(f"Words: {total_words}")
 
 
 def is_word_valid(word: str) -> bool | None:
