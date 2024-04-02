@@ -7,6 +7,7 @@ import time
 import enchant
 import json
 import re
+from inputimeout import inputimeout, TimeoutOccurred
 
 
 __author__ = "Jessie You"
@@ -30,6 +31,8 @@ SCORES: dict[int, int] = {
     15: 5000,
     16: 5400,
 }
+DURATION: float = 20.0
+START_TIME: float = 0.0
 
 INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 """Matches strings such as
@@ -38,6 +41,7 @@ INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 * 0,0;1,1
 * 0,0;1,1;2,3
 """
+PROMPT: str = ">> "
 
 
 def main() -> None:
@@ -48,19 +52,23 @@ def main() -> None:
 def play() -> None:
     """Play the game"""
     user_words: list[str] = []
-    duration = 20
-    start_time = time.time()
-    while int(time.time() - start_time) < duration:
-        pprint.pprint(BOARD)
-        word: str | None = get_word()
-        if word is None:
-            # don't need to print error message because get_word() already prints one
-            continue
-        elif is_word_valid(word):
-            user_words.append(word)
-            print(f"Valid word {word}")
-        else:
-            print(f"Invalid word {word}")
+    global START_TIME
+    START_TIME = time.time()
+
+    try:
+        while True:
+            pprint.pprint(BOARD)
+            word: str | None = get_word()
+            if word is None:
+                # don't need to print error message because get_word() already prints one
+                continue
+            elif is_word_valid(word):
+                user_words.append(word)
+                print(f"Valid word {word}")
+            else:
+                print(f"Invalid word {word}")
+    except TimeoutOccurred:
+        pass
 
     sorted_words: list[str] = sorted(
         user_words, key=lambda word: (len(word), word), reverse=True
@@ -88,8 +96,14 @@ def randomize_board() -> None:
 def get_word() -> str | None:
     """Get a word on the board from the user. The user inputs a list of index pairs, such as 0,0;1,2;1,3
 
-    Returns None if the input is invalid."""
-    user_input: str = input("Input: ")
+    Returns:
+        str | None: The word if it is valid, None otherwise
+    Raises:
+        TimeoutOccurred: If time has run out
+    """
+    user_input: str = inputimeout(
+        prompt=PROMPT, timeout=(DURATION - (time.time() - START_TIME))
+    )
     user_input = user_input.replace(" ", "")
 
     if INDEX_FORMAT.match(user_input) is None:
@@ -100,7 +114,7 @@ def get_word() -> str | None:
     index_pairs: list[tuple[int, int]] = []
 
     for index_pair in user_input_split:
-        index_pair_tup = tuple(map(int, index_pair.split(",")))
+        index_pair_tup: tuple[int, int] = tuple(map(int, index_pair.split(",")))  # type: ignore
         if index_pair_tup[0] >= SIZE or index_pair_tup[1] >= SIZE:
             print(
                 f"{index_pair_tup} has out-of-bounds element(s). Both indices must be less than {SIZE}"
