@@ -4,6 +4,7 @@ from string import ascii_uppercase
 from random import choice
 import pprint
 import time
+from inputimeout import inputimeout
 import enchant
 import json
 import re
