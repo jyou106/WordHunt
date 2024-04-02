@@ -31,7 +31,7 @@ SCORES: dict[int, int] = {
     15: 5000,
     16: 5400,
 }
-DURATION: float = 20.0
+DURATION: float = 40.0
 START_TIME: float = 0.0
 
 INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
@@ -51,7 +51,9 @@ def main() -> None:
 
 def play() -> None:
     """Play the game"""
-    user_words: list[str] = []
+    words: dict[str, int] = dict()
+    """word: score"""
+
     global START_TIME
     START_TIME = time.time()
 
@@ -63,21 +65,21 @@ def play() -> None:
                 # don't need to print error message because get_word() already prints one
                 continue
             elif is_word_valid(word):
-                user_words.append(word)
+                words[word] = SCORES[len(word)]
                 print(f"Valid word {word}")
             else:
                 print(f"Invalid word {word}")
     except TimeoutOccurred:
         pass
 
-    sorted_words: list[str] = sorted(
-        user_words, key=lambda word: (len(word), word), reverse=True
+    # Sort by negative score (so that higher score appears first), then alphabetically by word
+    # Don't use reverse=True because that would make the words appear in reverse alphabetical order
+    sorted_words: dict[str, int] = dict(
+        sorted(words.items(), key=lambda kv: (-kv[1], kv[0]))
     )
-    words_and_scores: dict[str, int] = {
-        word: SCORES[len(word)] for word in sorted_words
-    }
-    print("\n" + json.dumps(words_and_scores, indent=4))
-    print(f"Score: {sum(words_and_scores.values())}")
+
+    print("\n" + json.dumps(sorted_words, indent=4))
+    print(f"Score: {sum(sorted_words.values())}")
 
 
 def is_word_valid(word: str) -> bool | None:
