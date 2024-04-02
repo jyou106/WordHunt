@@ -3,7 +3,6 @@
 from string import ascii_uppercase
 from random import choice
 import pprint
-from inputimeout import inputimeout
 import time
 import enchant
 
@@ -16,7 +15,8 @@ WORDS = enchant.Dict("en_US")
 
 
 def main() -> None:
-    #randomized()
+    randomized()
+    pretty_print()
     play() 
 
 
@@ -24,21 +24,14 @@ def play() -> None:
     """Play the game"""
     # TODO
     points: int
-    user_word = []
+    user_words: list[str] = []
     duration = 10
     start_time = time.time()
-    while int(time.time() - start_time) < (duration):
-        try: 
-        # Take timed input using inputimeout() function 
-            time_over = inputimeout(prompt='Name your best friend:', timeout=(duration - (time.time() - start_time))) 
-            user_word.append(time_over)
-        # Catch the timeout error 
-        except Exception: 
-            # Declare the timeout statement 
-            time_over = 'Your time is over!'
-            print(time_over)
-    
-    print(user_word)
+    while int(time.time() - start_time) < duration:
+        word: str = get_word()
+        print(word)
+        if is_word_valid(word):
+            user_words.append(word)
 
 
 def is_word_valid(word: str) -> bool | None:
@@ -57,29 +50,42 @@ def pretty_print() -> None:
     pprint.pprint(BOARD)
 
 
-def get_input() -> tuple[int, int]:
-    indices: tuple[int, ...]
-    while True:
-        user_input = input("Input: ")
-        user_input = user_input.replace(" ", "")
+def get_word() -> str | None:
+    """Get a word on the board from the user. The user inputs a list of indices (e.g., 0,0;1,2;1,3)."""
+    s: str = ""
 
-        if not all(char.isdigit() or char == "," for char in user_input):
-            print("Invalid input. Ex: 0, 0 (nonnegative integers)")
-            continue
+    user_input: str = input("Input: ")
+    user_input.replace(" ", "")
 
-        indices = tuple(map(int, user_input.split(",")))
+    if not all(char.isdigit() or char in {",", ";"} for char in user_input) or not user_input:
+        print("Invalid input. Ex: 0,0;1,2;1,3 (nonnegative integers)")
+        return None
 
-        if len(indices) != 2:
-            print("Invalid number of inputs. Ex: 0, 0")
-            continue
-        if indices[0] >= SIZE or indices[1] >= SIZE:
-            print(f"Invalid input. Both indices must be less than {SIZE}")
-            continue
+    user_input_split: list[str] = user_input.split(";")
+    index_pairs: list[tuple[int, int]] = []
 
-        break
+    for index_pair in user_input_split:
+        index_pair_int = tuple(map(int, index_pair.split(",")))
+        if len(index_pair_int) != 2:
+            print(f"{index_pair_int} doesn't have 2 elements. Need pairs of indices (i, j).")
+            return None
+        if index_pair_int[0] >= SIZE or index_pair_int[1] >= SIZE:
+            print(f"{index_pair_int} has out-of-bounds element(s). Both indices must be less than {SIZE}")
+            return None
+        index_pairs.append(index_pair_int)
 
-    return indices[0], indices[1]
+    # Should use iterator
+    for i in range(0, len(index_pairs) - 1):
+        prev_index_pair: tuple[int, int] = index_pairs[i]
+        curr_index_pair: tuple[int, int] = index_pairs[i+1]
+        if not is_adjacent(prev_index_pair, curr_index_pair):
+            print(f"Index pairs {prev_index_pair} and {curr_index_pair} are not adjacent to each other")
+            return None
 
+    for index_pair in index_pairs:
+        s += BOARD[index_pair[0]][index_pair[1]]
+    
+    return s
 
 def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
     if left == right:
