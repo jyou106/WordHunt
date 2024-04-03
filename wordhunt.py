@@ -1,19 +1,18 @@
 """Word hunt simulator"""
 
-from string import ascii_uppercase
-import pprint
 import time
 import enchant
 import json
 import re
 from inputimeout import inputimeout, TimeoutOccurred
-from numpy.random import choice
+import numpy as np
+from random import choice
 
 
 __author__ = "Jessie You"
 
 SIZE = 4
-BOARD = [["A"] * SIZE for _ in range(SIZE)]
+BOARD = np.zeros((4, 4))
 WORDS = enchant.Dict("en_US")
 SCORES: dict[int, int] = {
     3: 100,
@@ -42,34 +41,14 @@ INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 * 0,0;1,1;2,3
 """
 PROMPT: str = ">> "
-# https://en.wikipedia.org/wiki/Scrabble_letter_distributions#English
-SCRABBLE_LETTER_DISTRIBUTION: tuple[float, ...] = (
-    9 / 98,
-    2 / 98,
-    2 / 98,
-    4 / 98,
-    12 / 98,
-    2 / 98,
-    3 / 98,
-    2 / 98,
-    9 / 98,
-    1 / 98,
-    1 / 98,
-    4 / 98,
-    2 / 98,
-    6 / 98,
-    8 / 98,
-    2 / 98,
-    1 / 98,
-    6 / 98,
-    4 / 98,
-    6 / 98,
-    4 / 98,
-    2 / 98,
-    2 / 98,
-    1 / 98,
-    2 / 98,
-    1 / 98,
+
+BOGGLE_DISTRIBUTION_4: np.ndarray = np.array(
+    [
+        ["RIFOBX", "IFEHEY", "DENOWS", "UTOKND"],
+        ["HMSRAO", "LUPETS", "ACITOA", "YLGKUE"],
+        ["QBMJOA", "EHISPN", "VETIGN", "BALIYT"],
+        ["EZAVND", "RALESC", "UWILRG", "PACEMD"],
+    ]
 )
 
 
@@ -83,12 +62,15 @@ def play() -> None:
     words: dict[str, int] = dict()
     """word: score"""
 
+    global BOARD
+    BOARD = randomize_board()
+
     global START_TIME
     START_TIME = time.time()
 
     try:
         while True:
-            pprint.pprint(BOARD)
+            print(BOARD)
             word: str | None = get_word()
             if word is None:
                 # don't need to print error message because get_word() already prints one
@@ -121,10 +103,11 @@ def is_word_valid(word: str) -> bool | None:
     return WORDS.check(word)
 
 
-def randomize_board() -> None:
-    for i in range(len(BOARD)):
-        for j in range(len(BOARD[0])):
-            BOARD[i][j] = choice(list(ascii_uppercase), p=SCRABBLE_LETTER_DISTRIBUTION)
+def randomize_board() -> np.ndarray:
+    return np.reshape(
+        np.array(list(map(choice, np.array(BOGGLE_DISTRIBUTION_4.flatten())))),
+        BOGGLE_DISTRIBUTION_4.shape,
+    )
 
 
 def get_word() -> str | None:
