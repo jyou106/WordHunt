@@ -12,7 +12,7 @@ from random import choice
 __author__ = "Jessie You"
 
 SIZE = 4
-BOARD = np.zeros((4, 4))
+BOARD: np.ndarray = np.zeros((4, 4))
 WORDS = enchant.Dict("en_US")
 SCORES: dict[int, int] = {
     3: 100,
@@ -31,7 +31,9 @@ SCORES: dict[int, int] = {
     16: 5400,
 }
 DURATION: float = 60.0
+"""seconds"""
 START_TIME: float = 0.0
+"""seconds"""
 
 INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 """Matches strings such as
@@ -71,7 +73,8 @@ def play() -> None:
 
     try:
         while True:
-            print(pretty_board(BOARD))
+            print("\n" + pretty_board(BOARD))
+            print(f"{round(DURATION - elapsed_time_seconds())} seconds left")
             word: str | None = get_word()
             if word is None:
                 # don't need to print error message because get_word() already prints one
@@ -82,7 +85,7 @@ def play() -> None:
             else:
                 print(f"Invalid word {word}")
     except TimeoutOccurred:
-        pass
+        print("\nTime's up")
 
     # Sort by negative score (so that higher score appears first), then alphabetically by word
     # Don't use reverse=True because that would make the words appear in reverse alphabetical order
@@ -130,7 +133,7 @@ def get_word() -> str | None:
         TimeoutOccurred: If time has run out
     """
     user_input: str = inputimeout(
-        prompt=PROMPT, timeout=(DURATION - (time.time() - START_TIME))
+        prompt=PROMPT, timeout=(DURATION - elapsed_time_seconds())
     )
     user_input = user_input.replace(" ", "")
 
@@ -168,6 +171,10 @@ def is_adjacent(left: tuple[int, int], right: tuple[int, int]) -> bool:
     if left == right:
         return False
     return abs(left[0] - right[0]) <= 1 and abs(left[1] - right[1]) <= 1
+
+
+def elapsed_time_seconds() -> float:
+    return time.time() - START_TIME
 
 
 if __name__ == "__main__":
