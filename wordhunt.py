@@ -70,7 +70,7 @@ def play() -> None:
 
     try:
         while True:
-            print(BOARD)
+            print(pretty_board(BOARD))
             word: str | None = get_word()
             if word is None:
                 # don't need to print error message because get_word() already prints one
@@ -94,6 +94,16 @@ def play() -> None:
     print("\n" + json.dumps(sorted_words, indent=4))
     print(f"Score: {sum(sorted_words.values())}")
     print(f"Words: {total_words}")
+
+
+def pretty_board(arr: np.ndarray) -> str:
+    return (
+        arr.__str__()
+        .replace("[", "")
+        .replace("]", "")
+        .replace("'", "")
+        .replace("\n ", "\n")
+    )
 
 
 def is_word_valid(word: str) -> bool | None:
