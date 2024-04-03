@@ -42,6 +42,7 @@ INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 """
 PROMPT: str = ">> "
 
+# https://boardgames.stackexchange.com/questions/29264/boggle-what-is-the-dice-configuration-for-boggle-in-various-languages
 BOGGLE_DISTRIBUTION_4: np.ndarray = np.array(
     [
         ["RIFOBX", "IFEHEY", "DENOWS", "UTOKND"],
