@@ -1,2 +1,4 @@
 pyenchant==3.2.2
 inputimeout==1.0.4
+numpy==1.26.4
+scipy==1.13.0

@@ -1,13 +1,13 @@
 """Word hunt simulator"""
 
 from string import ascii_uppercase
-from random import choice
 import pprint
 import time
 import enchant
 import json
 import re
 from inputimeout import inputimeout, TimeoutOccurred
+from numpy.random import choice
 
 
 __author__ = "Jessie You"
@@ -42,6 +42,35 @@ INDEX_FORMAT: re.Pattern = re.compile(r"(\d*,\d*;)*\d*,\d*")
 * 0,0;1,1;2,3
 """
 PROMPT: str = ">> "
+# https://en.wikipedia.org/wiki/Scrabble_letter_distributions#English
+SCRABBLE_LETTER_DISTRIBUTION: tuple[float, ...] = (
+    9 / 98,
+    2 / 98,
+    2 / 98,
+    4 / 98,
+    12 / 98,
+    2 / 98,
+    3 / 98,
+    2 / 98,
+    9 / 98,
+    1 / 98,
+    1 / 98,
+    4 / 98,
+    2 / 98,
+    6 / 98,
+    8 / 98,
+    2 / 98,
+    1 / 98,
+    6 / 98,
+    4 / 98,
+    6 / 98,
+    4 / 98,
+    2 / 98,
+    2 / 98,
+    1 / 98,
+    2 / 98,
+    1 / 98,
+)
 
 
 def main() -> None:
@@ -95,7 +124,7 @@ def is_word_valid(word: str) -> bool | None:
 def randomize_board() -> None:
     for i in range(len(BOARD)):
         for j in range(len(BOARD[0])):
-            BOARD[i][j] = choice(ascii_uppercase)
+            BOARD[i][j] = choice(list(ascii_uppercase), p=SCRABBLE_LETTER_DISTRIBUTION)
 
 
 def get_word() -> str | None:
