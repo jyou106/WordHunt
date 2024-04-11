@@ -79,6 +79,8 @@ def play() -> None:
             if word is None:
                 # don't need to print error message because get_word() already prints one
                 continue
+            elif word in words:
+                print(f"Word {word} already found")
             elif is_word_valid(word):
                 words[word] = SCORES[len(word)]
                 print(f"Valid word {word}")
